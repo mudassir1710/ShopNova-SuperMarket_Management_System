@@ -4,3 +4,4 @@ customer and cashier classes are made
 Inventory class made 
 working on cashier dashboard 
 completed the login dashboard
+Added file 
