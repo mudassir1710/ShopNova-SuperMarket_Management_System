@@ -706,7 +706,7 @@ public class AdminFrame extends JFrame {
                 BorderFactory.createEmptyBorder(4, 10, 4, 10)));
         return f;
     }
-    // Method to add a label and a component (like a text field) as a row
+    // Method to add a label and a component as a row
 
     void addRow(JPanel p, GridBagConstraints gc, int row, String label, JComponent comp) {
         JLabel l = new JLabel(label);
