@@ -1,2 +1,0 @@
-1,Laptop,2,Electronics,2026-04-19,78.0
-2,Mutton Mince 5kg,85,Meat,2026-12-09,12000.0

@@ -1,17 +1,16 @@
+package com.shopnova.ui;
+
+import com.shopnova.manager.*;
+import com.shopnova.model.*;
+import com.shopnova.util.ReceiptPrinter;
 import javax.swing.*;
 import javax.swing.table.*;
 import java.awt.*;
-import java.io.File;
-import java.io.FileWriter;
 import java.time.LocalDate;
-import java.util.Scanner;
 
 public class CashierFrame extends JFrame {
 
-    // ======= Designing font and colors using AWT (static to share and final for
-    // remaining uniform)====
-
-    // colors====================================
+    // Colours
     static final Color SIDEBAR = new Color(15, 23, 42);
     static final Color ACCENT = new Color(59, 130, 246);
     static final Color CARD_BG = Color.WHITE;
@@ -23,7 +22,7 @@ public class CashierFrame extends JFrame {
     static final Color AMBER = new Color(202, 138, 4);
     static final Color ORANGE = new Color(194, 65, 12);
 
-    // fonts====================================
+    // Fonts
     static final Font F_TITLE = new Font("Segoe UI", Font.BOLD, 22);
     static final Font F_SECT = new Font("Segoe UI", Font.BOLD, 15);
     static final Font F_BODY = new Font("Segoe UI", Font.PLAIN, 14);
@@ -35,22 +34,21 @@ public class CashierFrame extends JFrame {
     Cashier cashier;
     Inventory inventory;
     JPanel content;
-    JButton activeNavBtn; // Currently highlighted sidebar button
+    JButton activeNavBtn;
 
-    // Constructor takes a Cashier and Inventory object
+    // Constructor
 
     public CashierFrame(Cashier cashier, Inventory inventory) {
-        this.cashier = cashier; // aggregation: CashierFrame "has-a" Cashier
-        this.inventory = inventory; // aggregation: CashierFrame "has-a" Inventory
+        this.cashier = cashier;
+        this.inventory = inventory;
 
-        setTitle("Store Management — Cashier: " + cashier.username); // title with cashier's username
+        setTitle("ShopNova — Cashier: " + cashier.username); // title with cashier's username
         setDefaultCloseOperation(EXIT_ON_CLOSE);// when the user clicks the X button, the whole program ends
         setSize(1050, 660);
         setLocationRelativeTo(null);// center on screen
         setResizable(true);// allow maximizing
 
         // A root JPanel is created
-
         JPanel root = new JPanel(new BorderLayout());
         root.setBackground(PAGE_BG);
         root.add(buildSidebar(), BorderLayout.WEST); // sidebar on the west side (left)
@@ -80,7 +78,6 @@ public class CashierFrame extends JFrame {
         // label # 1
 
         JLabel logo = new JLabel("Shop Nova  ");// showing logo
-        // designing the logo using AWT
 
         logo.setFont(new Font("Segoe UI", Font.BOLD, 18));
         logo.setForeground(Color.WHITE);
@@ -91,14 +88,13 @@ public class CashierFrame extends JFrame {
         // label # 2
 
         JLabel role = new JLabel("  Cashier: " + cashier.username);// showing the role of logged in
-        // designing the role label using AWT
         role.setFont(new Font("Segoe UI", Font.PLAIN, 12));
         role.setForeground(new Color(100, 116, 139));
         role.setAlignmentX(Component.LEFT_ALIGNMENT);
         role.setBorder(BorderFactory.createEmptyBorder(0, 18, 20, 0));
         sb.add(role);// adding role label to the sidebar
 
-        // Divider (JSeparator) line to separate the header from the navigation buttons
+        // Divider line to separate the header from the navigation buttons
 
         sb.add(divider());
 
@@ -164,6 +160,14 @@ public class CashierFrame extends JFrame {
         return b;
     }
 
+    void saveCashierSales() {
+        try (java.io.FileWriter fw = new java.io.FileWriter("cashiers.txt")) {
+            fw.write(cashier.username + "," + cashier.password + "," + cashier.totalSales + "\n");
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
     // -------Set Active Method(basically highlights the active button)-------
     void setActive(JButton b) {
         if (activeNavBtn != null) {
@@ -195,12 +199,10 @@ public class CashierFrame extends JFrame {
         content.repaint();// redraws the panel on screen so the user actually sees the change
     }
 
-    // =============================================================
-    // ── Create Main Dashboard(called once from the constructor when the window
+    // Create Main Dashboard called once from the constructor when the window
     // first opens and at the end of showCheckout() after a sale is completed to
     // bring the cashier back to the home screen.)
-    // ───────────────────────────────────────────────────
-    // =============================================================
+
     void showDashboard() {
         JPanel p = new JPanel(new BorderLayout());// Main panel for dashboard
         p.setBackground(PAGE_BG);
@@ -209,13 +211,13 @@ public class CashierFrame extends JFrame {
         // adding Header at top (build using pageHeader method that takes title and
         // subtitle as parameters)
 
-        p.add(pageHeader("Dashboard", "Hello, " + cashier.username + " — here's your overview"), BorderLayout.NORTH);
+        p.add(pageHeader("Dashboard", "Hello, " + cashier.username + " — Here's Your overview: "), BorderLayout.NORTH);
 
-        double cartTotal = cashier.cart.stream().mapToDouble(CartItem::total).sum(); // ?
+        double cartTotal = cashier.cart.stream().mapToDouble(CartItem::total).sum();
 
         // Creating 3 statistic cards in the center using a GridLayout of g panel
 
-        JPanel cards = new JPanel(new GridLayout(1, 3, 18, 0));
+        JPanel cards = new JPanel(new GridLayout(1, 4, 18, 0));
         // Designing the cards panel using AWT
         cards.setOpaque(false);
         cards.setBorder(BorderFactory.createEmptyBorder(24, 0, 0, 0));
@@ -224,8 +226,8 @@ public class CashierFrame extends JFrame {
         // takes a label, value, and accent color as parameters
         cards.add(statCard("Cart Items", String.valueOf(cashier.cart.size()), ACCENT));
         cards.add(statCard("Cart Total", String.format("Rs %.2f", cartTotal), SUCCESS));
-        cards.add(statCard("In Stock", String.valueOf(inventory.list.size()) + " products", AMBER));
-
+        cards.add(statCard("In Stock", String.valueOf(inventory.getProducts().size()) + " products", AMBER));
+        cards.add(statCard("My Sales", String.format("Rs %.2f", cashier.totalSales), new Color(124, 58, 237)));
         // Adding the cards panel to the main dashboard panel in the center
         p.add(cards, BorderLayout.CENTER);
 
@@ -285,7 +287,6 @@ public class CashierFrame extends JFrame {
 
     // ── Inventory ───────────────────────────────────────────────────
     void showInventory() {
-        // create paneel
         JPanel p = new JPanel(new BorderLayout(0, 16));
         p.setBackground(PAGE_BG);
         p.setBorder(BorderFactory.createEmptyBorder(30, 30, 30, 30));
@@ -304,7 +305,7 @@ public class CashierFrame extends JFrame {
         // creating a table model with the column names and 0 rows initially
         DefaultTableModel model = new DefaultTableModel(cols, 0);
         // lloping through every product and adding new row for each product in list
-        for (Product pr : inventory.list)
+        for (Product pr : inventory.getProducts())
             model.addRow(new Object[] { pr.id, pr.name, pr.qty, pr.category, pr.expiry,
                     String.format("Rs %.2f", pr.price), pr.getStatus() });
         // passing to style table method for designing
@@ -335,15 +336,14 @@ public class CashierFrame extends JFrame {
 
     // ── Add To Cart ─────────────────────────────────────────────────
     void showAddToCart() {
-        JPanel p = new JPanel(new BorderLayout(0, 16));// dividing the page into two sections
+        JPanel p = new JPanel(new BorderLayout(0, 16));
         p.setBackground(PAGE_BG);
         p.setBorder(BorderFactory.createEmptyBorder(30, 30, 30, 30));
         p.add(pageHeader("Add to Cart", "Click a row then enter quantity"), BorderLayout.NORTH);
 
-        // Inventory table (top)
         String[] cols = { "ID", "Name", "Qty", "Category", "Price", "Status" };
         DefaultTableModel model = new DefaultTableModel(cols, 0);
-        for (Product pr : inventory.list)
+        for (Product pr : inventory.getProducts())
             model.addRow(new Object[] { pr.id, pr.name, pr.qty, pr.category,
                     String.format("Rs %.2f", pr.price), pr.getStatus() });
 
@@ -351,17 +351,14 @@ public class CashierFrame extends JFrame {
         JScrollPane sp = new JScrollPane(table);
         sp.setBorder(BorderFactory.createEmptyBorder());
         sp.getViewport().setBackground(Color.WHITE);
-
         JPanel tableCard = wrapInCard(sp);
 
-        // Bottom section
-        JTextField idField = field();// id field to enter the id of th product to cart
+        JTextField idField = field();
         idField.setEditable(false);
         idField.setBackground(new Color(248, 250, 252));
-        JTextField qtyField = field();// to enter the quantity of the product to add to cart
+        JTextField qtyField = field();
 
         table.getSelectionModel().addListSelectionListener(e -> {
-
             if (!e.getValueIsAdjusting() && table.getSelectedRow() >= 0)
                 idField.setText(model.getValueAt(table.getSelectedRow(), 0).toString());
         });
@@ -371,11 +368,9 @@ public class CashierFrame extends JFrame {
         formCard.setBorder(BorderFactory.createCompoundBorder(
                 BorderFactory.createLineBorder(new Color(226, 232, 240)),
                 BorderFactory.createEmptyBorder(20, 30, 20, 30)));
-
         GridBagConstraints gc = new GridBagConstraints();
         gc.insets = new Insets(6, 8, 6, 8);
         gc.fill = GridBagConstraints.HORIZONTAL;
-
         addRow(formCard, gc, 0, "Selected Product ID", idField);
         addRow(formCard, gc, 1, "Quantity", qtyField);
 
@@ -386,6 +381,7 @@ public class CashierFrame extends JFrame {
         gc.insets = new Insets(16, 8, 8, 8);
         formCard.add(addBtn, gc);
 
+        // ★ CORRECTION: completely rewritten action listener
         addBtn.addActionListener(e -> {
             try {
                 int id = Integer.parseInt(idField.getText().trim());
@@ -399,14 +395,38 @@ public class CashierFrame extends JFrame {
                     JOptionPane.showMessageDialog(this, "Product not found.");
                     return;
                 }
-                if (pr.qty < qty) {
-                    JOptionPane.showMessageDialog(this, "Only " + pr.qty + " in stock.");
+                if (pr.getStatus().equals("EXPIRED")) {
+                    JOptionPane.showMessageDialog(this, "Cannot add expired product.");
                     return;
                 }
-                cashier.cart.add(new CartItem(pr, qty));
-                pr.qty -= qty;
-                inventory.save();
-                // refresh table row
+
+                // Check how many are already reserved in the cart
+                int alreadyInCart = 0;
+                for (CartItem ci : cashier.cart) {
+                    if (ci.product.id == pr.id)
+                        alreadyInCart += ci.qty;
+                }
+                if (pr.qty < alreadyInCart + qty) {
+                    JOptionPane.showMessageDialog(this,
+                            "Not enough stock. Available: " + (pr.qty - alreadyInCart));
+                    return;
+                }
+
+                // Merge with existing item if present
+                boolean merged = false;
+                for (CartItem ci : cashier.cart) {
+                    if (ci.product.id == pr.id) {
+                        ci.qty += qty;
+                        merged = true;
+                        break;
+                    }
+                }
+                if (!merged) {
+                    cashier.cart.add(new CartItem(pr.copy(), qty)); // snapshot copy
+                }
+
+                // DO NOT reduce pr.qty – stock stays untouched until checkout.
+                // Refresh the table (stock stays the same, only status may change visually)
                 for (int row = 0; row < model.getRowCount(); row++)
                     if (Integer.parseInt(model.getValueAt(row, 0).toString()) == id) {
                         model.setValueAt(pr.qty, row, 2);
@@ -415,7 +435,17 @@ public class CashierFrame extends JFrame {
                 qtyField.setText("");
                 idField.setText("");
                 table.clearSelection();
-                JOptionPane.showMessageDialog(this, "Added to cart!");
+                double disc = pr.getAutoDiscount();
+                if (disc > 0) {
+                    long days = java.time.temporal.ChronoUnit.DAYS.between(java.time.LocalDate.now(), pr.expiry);
+                    JOptionPane.showMessageDialog(this,
+                            String.format(
+                                    "Added! ⚠ Expiry discount: %.0f%% off\nExpires in %d day(s)\nPrice: Rs %.2f → Rs %.2f",
+                                    disc * 100, days, pr.price, pr.price * (1 - disc)),
+                            "Discount Applied", JOptionPane.WARNING_MESSAGE);
+                } else {
+                    JOptionPane.showMessageDialog(this, "Added to cart!");
+                }
             } catch (NumberFormatException ex) {
                 JOptionPane.showMessageDialog(this, "Enter valid numbers.");
             }
@@ -431,45 +461,37 @@ public class CashierFrame extends JFrame {
     }
 
     // ── View Cart ───────────────────────────────────────────────────
+    // ── View Cart ★ CORRECTED ★
+    // ───────────────────────────────────────────────────
     void showCart() {
         JPanel p = new JPanel(new BorderLayout(0, 16));
-        // design
         p.setBackground(PAGE_BG);
         p.setBorder(BorderFactory.createEmptyBorder(30, 30, 30, 30));
         p.add(pageHeader("View Cart", "Items currently in your cart"), BorderLayout.NORTH);
-        // definig column for cart table
+
         String[] cols = { "Product", "Unit Price", "Qty", "Total" };
-        // table model with column names and 0 rows
         DefaultTableModel model = new DefaultTableModel(cols, 0);
-        // accumulating grand total in an array to modify inside lambda
-        // Java does not allow lambdas to modify plain local variables so we use an
-        // array to hold the grand total which can be modified inside the lambda
-        // expressions for the remove and clear buttons later on.
         double[] grand = { 0 };
-        // looping through cart itmems in cashiers cart
         for (CartItem ci : cashier.cart) {
-            // adding row for each item
             model.addRow(new Object[] { ci.product.name,
                     String.format("Rs %.2f", ci.product.price), ci.qty,
                     String.format("Rs %.2f", ci.total()) });
             grand[0] += ci.total();
         }
-        // Diplaying the cart items
-        JTable table = styledTable(model);// passing to design
-        JScrollPane sp = new JScrollPane(table);// wrapping in scroll panel
+
+        JTable table = styledTable(model);
+        JScrollPane sp = new JScrollPane(table);
         sp.setBorder(BorderFactory.createEmptyBorder());
         sp.getViewport().setBackground(Color.WHITE);
         p.add(wrapInCard(sp), BorderLayout.CENTER);
 
-        // Bottom bar
-        // grand total label with design
         JLabel totalLbl = new JLabel("  Grand Total:  " + String.format("Rs %.2f", grand[0]));
         totalLbl.setFont(new Font("Segoe UI", Font.BOLD, 16));
         totalLbl.setForeground(TEXT_DK);
-        // Remove and Clear buttons with design
         JButton removeBtn = actionBtn("Remove Selected", ORANGE);
         JButton clearBtn = actionBtn("Clear Cart", DANGER);
-        // Remove button action performed
+
+        // ★ CORRECTION: remove does NOT touch stock – it was never reduced.
         removeBtn.addActionListener(e -> {
             int row = table.getSelectedRow();
             if (row < 0) {
@@ -477,36 +499,31 @@ public class CashierFrame extends JFrame {
                 return;
             }
             CartItem ci = cashier.cart.get(row);
-            ci.product.qty += ci.qty;
-            inventory.save();
+            // stock remains unchanged; just remove the cart line
             cashier.cart.remove(row);
             model.removeRow(row);
             grand[0] = cashier.cart.stream().mapToDouble(CartItem::total).sum();
             totalLbl.setText("  Grand Total:  " + String.format("Rs %.2f", grand[0]));
         });
-        // Clear button action performed
+
+        // ★ CORRECTION: clear cart without restoring any stock
         clearBtn.addActionListener(e -> {
             if (cashier.cart.isEmpty()) {
                 JOptionPane.showMessageDialog(this, "Cart is already empty.");
                 return;
             }
-            for (CartItem ci : cashier.cart)
-                ci.product.qty += ci.qty;
-            inventory.save();
             cashier.cart.clear();
             model.setRowCount(0);
             grand[0] = 0;
-            totalLbl.setText("  Grand Total:  RS 0.00");
+            totalLbl.setText("  Grand Total:  Rs 0.00");
         });
-        // building bottom bar
+
         JPanel bar = new JPanel(new BorderLayout());
         bar.setOpaque(false);
         bar.setBorder(BorderFactory.createEmptyBorder(12, 0, 0, 0));
         bar.add(totalLbl, BorderLayout.WEST);
-        // panl to hold buttons and align them to the right
         JPanel btns = new JPanel(new FlowLayout(FlowLayout.RIGHT, 10, 0));
         btns.setOpaque(false);
-        // adding buttons to the button panel and button panel to the bottom bar
         btns.add(removeBtn);
         btns.add(clearBtn);
         bar.add(btns, BorderLayout.EAST);
@@ -516,7 +533,7 @@ public class CashierFrame extends JFrame {
 
     // ── Checkout ────────────────────────────────────────────────────
     void showCheckout() {
-        // if cart is empty on checkout page shaows message
+        // if cart is empty on checkout page shows message
         if (cashier.cart.isEmpty()) {
             JOptionPane.showMessageDialog(this, "Cart is empty. Add products first.");
             return;
@@ -526,73 +543,57 @@ public class CashierFrame extends JFrame {
         p.setBackground(PAGE_BG);
         p.setBorder(BorderFactory.createEmptyBorder(30, 30, 30, 30));
         p.add(pageHeader("Checkout", "Complete the sale"), BorderLayout.NORTH);
+        double subtotal = cashier.cart.stream()
+            .mapToDouble(ci -> ci.product.price * (1 - ci.product.getAutoDiscount()) * ci.qty)
+            .sum();
 
-        double subtotal = cashier.cart.stream().mapToDouble(CartItem::total).sum();// method .stream() converts the cart
-                                                                                   // list into a stream which allows us
-                                                                                   // to perform operations on it.
-                                                                                   // mapToDouble(CartItem::total)
-                                                                                   // applies the total() method to each
-                                                                                   // CartItem in the stream which
-                                                                                   // return price multiplied by
-                                                                                   // quantity and .sum() adds all those
-                                                                                   // double to get subtotal
-        // Card panel to hold chekout form , name ,subtotal as well as cash field and
-        // confirm button
-        JPanel card = new JPanel(new GridBagLayout());// GridBagLayout let us place components at exact row and column
-                                                      // positions with precise control over spacing and sizing.
-        // designing
-        card.setBackground(CARD_BG);// CRD BG holds thw white color through Color.white
+        // Card panel to hold checkout form, name, subtotal, cash field, confirm button
+        JPanel card = new JPanel(new GridBagLayout());
+        card.setBackground(CARD_BG);
         card.setBorder(BorderFactory.createCompoundBorder(
                 BorderFactory.createLineBorder(new Color(226, 232, 240)),
                 BorderFactory.createEmptyBorder(30, 40, 30, 40)));
 
         GridBagConstraints gc = new GridBagConstraints();
-        // spaces aorund each component
         gc.insets = new Insets(8, 8, 8, 8);
-        gc.fill = GridBagConstraints.HORIZONTAL;// strech components to fill whole space
+        gc.fill = GridBagConstraints.HORIZONTAL;
 
-        // name filed to enter cutomers name
+        // name field to enter customer's name
         JTextField nameField = field();
-        // lbl subtotal to show the subtotal
+        // label to show the subtotal
         JLabel subLbl = new JLabel(String.format("Rs %.2f", subtotal));
         subLbl.setFont(new Font("Segoe UI", Font.BOLD, 16));
         subLbl.setForeground(ACCENT);
-        // cash field to enter the cash paid by customer
+        // cash field for cash paid
         JTextField cashField = field();
-        // add row takeing card panel into which we are adding our constraints at first
-        // row position with label Customer Name and the name field
+
         addRow(card, gc, 0, "Customer Name", nameField);
 
-        // Adding subtotal row withot input field just a label to show the subtotal
-        // amount
+        // subtotal row (label only)
         JLabel sl = new JLabel("Subtotal");
         sl.setFont(F_BODY);
         sl.setForeground(TEXT_MD);
-        gc.gridx = 0;// first column
-        gc.gridy = 1;// second row
-        gc.gridwidth = 1;// one column wide
-        gc.weightx = 0;// does not take extra horizontal space
-        // adds the subtotal label in column 0and row 1 in card
+        gc.gridx = 0;
+        gc.gridy = 1;
+        gc.gridwidth = 1;
+        gc.weightx = 0;
         card.add(sl, gc);
-        // adding the subtotal amount label in column 1, row 1
         gc.gridx = 1;
         gc.weightx = 1;
         card.add(subLbl, gc);
 
-        // adding cash paid row with label and input field using addRow method at row
-        // position 2
         addRow(card, gc, 2, "Cash Paid", cashField);
+
         // confirm button
         JButton confirmBtn = actionBtn("Confirm & Print Receipt", SUCCESS);
-        // designing
         confirmBtn.setPreferredSize(new Dimension(260, 42));
         gc.gridx = 0;
         gc.gridy = 3;
         gc.gridwidth = 2;
         gc.insets = new Insets(20, 8, 8, 8);
-        // adding confirm button to the card panel at row 3
         card.add(confirmBtn, gc);
-        // action performed
+
+        // ★ CORRECTION: completely rewritten action listener
         confirmBtn.addActionListener(e -> {
             String name = nameField.getText().trim();
             if (name.isEmpty()) {
@@ -606,110 +607,88 @@ public class CashierFrame extends JFrame {
                 JOptionPane.showMessageDialog(this, "Enter valid cash amount.");
                 return;
             }
-            // creating customer object to calculate discount and save purchase history
-            Customer customer = new Customer(name);
 
-            // Load old total
-            double oldTotal = 0;
-            try {
-                Scanner sc = new Scanner(new File("customers.txt"));
-                while (sc.hasNextLine()) {
-                    String line = sc.nextLine();
-                    if (line.startsWith(name + ",")) {
-                        oldTotal = Double.parseDouble(line.split(",")[1].trim());
-                        break;
-                    }
+            CustomerManager custManager = new CustomerManager();
+            Customer customer = custManager.findOrCreate(name);
+
+            int pointsToRedeem = 0;
+            if (customer.points > 0) {
+                String input = JOptionPane.showInputDialog(this,
+                        "Available points: " + customer.points +
+                                "\nEnter points to redeem (0-" + customer.points + "):",
+                        "0");
+                if (input == null)
+                    return;
+                try {
+                    pointsToRedeem = Integer.parseInt(input.trim());
+                } catch (Exception ex) {
+                    JOptionPane.showMessageDialog(this, "Enter a valid whole number for points.");
+                    return;
                 }
-                sc.close();
-            } catch (Exception ignored) {
+                if (pointsToRedeem < 0 || pointsToRedeem > customer.points) {
+                    JOptionPane.showMessageDialog(this,
+                            "Points must be between 0 and " + customer.points + ".");
+                    return;
+                }
             }
 
-            // Add old + new together
-            customer.addPurchase(oldTotal + subtotal);
-            double discPct = customer.getDiscount();
-            double discAmt = subtotal * discPct / 100;
+            double discAmt = customer.redeemPoints(pointsToRedeem);
             double total = subtotal - discAmt;
+            if (total < 0)
+                total = 0;
             double change = cash - total;
             if (change < 0) {
-                JOptionPane.showMessageDialog(this, "Insufficient cash. Need Rs " + String.format("%.2f", total));
+                JOptionPane.showMessageDialog(this,
+                        "Insufficient cash. Need Rs " + String.format("%.2f", total));
                 return;
             }
 
-            // Save updated file
-            try {
-                File file = new File("customers.txt");
-                String content = "";
-                boolean found = false;
-
-                if (file.exists()) {
-                    // oprning the file and reading it line by line through scanner object
-                    Scanner sc = new Scanner(file);
-                    while (sc.hasNextLine()) {
-                        // reading next line and storing in line
-                        String line = sc.nextLine();
-                        // checking the line if it belongs to corrent customer
-                        if (line.startsWith(name + ",")) {
-                            // replacing with new points using method toFile in customer class to get
-                            // formatted line to add o the file
-                            content += customer.toFile() + "\n";
-                            found = true;
-                        }
-                        // if line does not belong to current customer keep it as it is
-                        else {
-                            content += line + "\n";
-                        }
-                    }
-                    sc.close();
+            for (CartItem ci : cashier.cart) {
+                boolean ok = inventory.reduceStock(ci.product.id, ci.qty);
+                if (!ok) {
+                    JOptionPane.showMessageDialog(this,
+                            "Stock error for " + ci.product.name + ". Sale cancelled.");
+                    return; // in a real system you'd rollback previous reductions
                 }
-
-                if (!found)
-                    content += customer.toFile() + "\n";
-
-                FileWriter fw = new FileWriter(file, false);
-                fw.write(content);
-                fw.close();
-
-            } catch (Exception ignored) {
             }
-            // building reciept string using string builder
-            StringBuilder sb = new StringBuilder();
-            sb.append("==============================\n");
-            sb.append("        STORE RECEIPT         \n");
-            sb.append("==============================\n");
-            sb.append("Customer : ").append(name).append("\n");
-            sb.append("Date     : ").append(LocalDate.now()).append("\n");
-            sb.append("Cashier  : ").append(cashier.username).append("\n");
-            sb.append("------------------------------\n");
-            for (CartItem ci : cashier.cart)
-                sb.append(String.format("%-14s x%d = RS%.2f\n", ci.product.name, ci.qty, ci.total()));
-            sb.append("------------------------------\n");
-            sb.append(String.format("Subtotal : RS%.2f\n", subtotal));
-            sb.append(String.format("Discount : %.1f%% (-RS%.2f)\n", discPct, discAmt));
-            sb.append(String.format("TOTAL    : RS%.2f\n", total));
-            sb.append(String.format("Cash     : RS%.2f\n", cash));
-            sb.append(String.format("Change   : RS%.2f\n", change));
-            sb.append("==============================\n");
-            // making text area to show reciept
-            JTextArea receipt = new JTextArea(sb.toString());// converting to pliin string
-            receipt.setFont(F_MONO);
-            receipt.setEditable(false);
-            receipt.setBackground(new Color(250, 250, 250));
-            // adding to scroll pane to show
-            JScrollPane rsp = new JScrollPane(receipt);
+
+            customer.addPurchase(subtotal);
+            custManager.saveCustomer(customer);
+
+            int pointsEarned = (int) (subtotal / 100);
+            int newBalance = customer.points;
+
+            String receipt = ReceiptPrinter.buildReceiptText(
+                    name, cashier.username, cashier.cart, subtotal,
+                    pointsToRedeem, discAmt, total, cash, change,
+                    pointsEarned, newBalance);
+
+            // Show receipt on screen
+            JTextArea receiptArea = new JTextArea(receipt);
+            receiptArea.setFont(F_MONO);
+            receiptArea.setEditable(false);
+            receiptArea.setBackground(new Color(250, 250, 250));
+            JScrollPane rsp = new JScrollPane(receiptArea);
             rsp.setPreferredSize(new Dimension(320, 320));
             JOptionPane.showMessageDialog(this, rsp, "Receipt", JOptionPane.PLAIN_MESSAGE);
 
+            // ★ NEW: Offer to save receipt as file
+            int saveChoice = JOptionPane.showConfirmDialog(this,
+                    "Save receipt as file?", "Save Receipt", JOptionPane.YES_NO_OPTION);
+            if (saveChoice == JOptionPane.YES_OPTION) {
+                ReceiptPrinter.printToPDF(this, receipt);
+            }
+            cashier.totalSales += total;
+            saveCashierSales();
             cashier.cart.clear();
             showDashboard();
         });
-        // wraping in other panel
-        JPanel wrap = new JPanel(new FlowLayout(FlowLayout.CENTER));// aarranging components in a row left to right and
-                                                                    // centering them horizontally.
+
+        // wrap in another panel (centered)
+        JPanel wrap = new JPanel(new FlowLayout(FlowLayout.CENTER));
         wrap.setOpaque(false);
         wrap.add(card);
-        // adding the wrap panel to the center of the main checkout panel
         p.add(wrap, BorderLayout.CENTER);
-        // swapping to show checkout page
         swap(p);
     }
 
