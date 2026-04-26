@@ -1,0 +1,4 @@
+4,Lays,100,Snacks,true,2026-04-30,50.0
+5,Milk,10,Dairy,true,2026-04-27,200.0
+6,Coke,12,Drinks,true,2026-06-25,150.0
+7,Oreo,24,Snacks,true,2026-06-30,50.0
