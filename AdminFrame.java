@@ -363,7 +363,7 @@ public class AdminFrame extends JFrame {
         // adding products from the inventory to the table model.
         for (Product pr : inventory.list)
             model.addRow(new Object[] { pr.id, pr.name, pr.qty, pr.category, pr.expiry,
-                    String.format("$%.2f", pr.price), pr.getStatus() });
+                    String.format("RS%.2f", pr.price), pr.getStatus() });
 
         JTable table = styledTable(model);
         // Color status column
@@ -566,7 +566,7 @@ public class AdminFrame extends JFrame {
         m.setRowCount(0);
         for (Product pr : inventory.list)
             m.addRow(new Object[] { pr.id, pr.name, pr.qty, pr.category,
-                    pr.expiry, String.format("$%.2f", pr.price), pr.getStatus() });
+                    pr.expiry, String.format("RS%.2f", pr.price), pr.getStatus() });
     }
 
     // ── Add Cashier ─────────────────────────────────────────────────
