@@ -1,22 +1,3 @@
-<div align="center">
-
-<img src="https://img.shields.io/badge/Java-17-ED8B00?style=for-the-badge&logo=openjdk&logoColor=white"/>
-<img src="https://img.shields.io/badge/Swing-GUI-4A90D9?style=for-the-badge&logo=java&logoColor=white"/>
-<img src="https://img.shields.io/badge/IntelliJ_IDEA-IDE-000000?style=for-the-badge&logo=intellij-idea&logoColor=white"/>
-<img src="https://img.shields.io/badge/Status-Complete-2ECC71?style=for-the-badge"/>
-
-<br/><br/>
-
-```
- _____ _               _   _
-/ ____| |             | \ | |
-| (___ | |__   ___  _ |  \| | _____   ____ _
-\___ \| '_ \ / _ \| '_ \  | |/ _ \ \ / / _` |
-____) | | | | (_) | |_) | |\  | (_) \ V / (_| |
-|_____/|_| |_|\___/| .__/|_| \_|\___/ \_/ \__,_|
-                   | |
-                   |_|
-```
 
 # 🛒 ShopNova — Supermarket Management System
 
