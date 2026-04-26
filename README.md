@@ -8,7 +8,7 @@
 [![Course](https://img.shields.io/badge/Course-CS--212%20OOP-blue?style=flat-square)](/)
 [![Class](https://img.shields.io/badge/Class-BESE--16B-purple?style=flat-square)](/)
 [![University](https://img.shields.io/badge/University-NUST%20SEECS-red?style=flat-square)](/)
-[![Team](https://img.shields.io/badge/Team-Khizer%20%7C%20Mudassir-orange?style=flat-square)](/)
+[![Team](https://img.shields.io/badge/Team-Mudassir_Azma%20%7C%20Khizer_Hayyat-orange?style=flat-square)](/)
 
 </div>
 
