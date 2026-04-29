@@ -221,7 +221,7 @@ java -cp out Main
 ### Admin Login
 ```
 Username: admin
-Password: admin1234
+Password: admin123
 ```
 
 ### Cashier Login
